@@ -58,14 +58,17 @@ Prerequisites:
 
 TROUBLESHOOTING 
 -------------------------
-- kubectl=cluster interaction tool
+1. kubectl=cluster interaction tool
 - `kubectl log pod_id`
 - `kubectl cluster-info`
 - `kubectl describe pod_id`
 - `kubectl describe --namespace default`
 - `kubectl describe deployment #`
 - `kubectl describe node #`
-
+2. PostgreSQL
+- `gcloud sql connect myinstance --user=postgres`
+-  userlist:`gcloud sql users list --instance=#`
+-  adduser:`gcloud sql users create [USER_NAME] --instance=# --password=#`
 
 RELATED DOCS/LINKS
 -----------------------------
