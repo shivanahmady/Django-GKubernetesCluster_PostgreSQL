@@ -1,0 +1,86 @@
+# [START kubernetes_deployment]
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: polls
+  labels:
+    app: polls
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: polls
+    spec:
+      containers:
+      - name: polls-app
+        # make template
+        image: gcr.io/appcontainer-test/polls
+        #------------ -----------------------------[Security Warning]
+        #imagePullPolicy: Off                       #PRODUCTION
+        imagePullPolicy: Always
+        #------------------------------------------[Security Warning]
+###############################################DATABASE CONFIG        
+        env:
+            # [cloudsql_secrets]
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: cloudsql
+                  key: username
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloudsql
+                  key: password
+            # [END cloudsql_secrets]
+###############################################DATABASE CONFIG   
+        ports:
+        - containerPort: 8080
+      # [ proxy_container]
+      - image: gcr.io/cloudsql-docker/gce-proxy:1.05
+        name: cloudsql-proxy
+        #cloud_sql_proxy instances describe ##sqlinstance##
+        #gcloud beta sql instances describe ##sqlinstance##
+        command: ["/cloud_sql_proxy", "--dir=/cloudsql",
+                  "-instances=##CHANGE_ME###=tcp:5432"]
+        volumeMounts:
+          - name: cloudsql-oauth-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
+          - name: ssl-certs
+            mountPath: /etc/ssl/certs
+          - name: cloudsql
+            mountPath: /cloudsql
+      # [END proxy_container] 
+      # [START volumes]
+      volumes:
+        - name: cloudsql-oauth-credentials
+          secret:
+            secretName: cloudsql-oauth-credentials
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs
+        - name: cloudsql
+          emptyDir:
+      # [END volumes]        
+# [END kubernetes_deployment]
+---
+# [START service]
+      # the service provides loadbalancing proxy over the polls appp
+      ### type='LoadBalancer' 
+      # the container engine creates external HTTP Load Balancer
+apiVersion: v1
+kind: Service
+metadata:
+  name: polls
+  labels:
+    app: polls
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: polls
+# [END service]
