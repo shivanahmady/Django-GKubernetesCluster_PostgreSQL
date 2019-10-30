@@ -69,6 +69,8 @@ TROUBLESHOOTING
 - `gcloud sql connect myinstance --user=postgres`
 -  userlist:`gcloud sql users list --instance=#`
 -  adduser:`gcloud sql users create [USER_NAME] --instance=# --password=#`
+-  `mysql --host=ip --user=root --password`
+-  `mysql --ssl-ca=server-ca.pem --ssl-cert=client-cert.pem --ssl-key=client-key.pem --host=[ip] --user=root --password`
 
 RELATED DOCS/LINKS
 -----------------------------
